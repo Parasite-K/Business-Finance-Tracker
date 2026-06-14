@@ -4,7 +4,7 @@ transactions = []
 next_id = 1
 
 #helper functions
-def get_valid_date():
+def get_valid_date():   #Only accept valid dates.
     while True:
         date = input("Enter the Date (DD/MM/YYYY)")
         
@@ -21,6 +21,9 @@ def get_valid_amount():
         amount = input("Enter the Amount:")
         try:
             amount = float(amount)
+            if amount < 0:
+                print("Amount cannot be negative.")
+                continue
             return amount 
         except ValueError:
             print("Please enter a valid Number")
@@ -68,12 +71,42 @@ def view_transactions():
         print(f"Amount: ₹{transaction['amount']}")
         print("-" * 30)
 
+def show_summary():
+    total_income = 0
+    total_expense = 0
+
+    if not transactions:
+        print("No transactions available.")
+        return
+
+    for transaction in transactions:
+        if transaction["type"] == "income":
+            total_income += transaction["amount"]
+
+        elif transaction["type"] == "expense":
+            total_expense += transaction["amount"]
+
+    profit = total_income - total_expense 
+
+    print("=" * 30)
+    print("SUMMARY FOR ALL TRANSACTIONS:- ")
+    print(f"Total Income = +₹{total_income}")
+    print(f"Total Expense = -₹{total_expense}")
+    print(f"Total Profit = ₹{profit}")
+    print("=" * 30)
+
+
+
+
+#main
 def main():
     while True:
         choice = input(
         "\n1. Add Transaction"
         "\n2. View Transactions"
-        "\n3. Exit"
+        "\n3. Delete a Transaction"
+        "\n4. Show summary for all Transactions"
+        "\n5. Exit"
         "\n>> "
     )
         
@@ -90,6 +123,12 @@ def main():
             view_transactions()
 
         elif choice == "3":
+            pass
+
+        elif choice == "4":
+            show_summary()
+
+        elif choice == "5":
             break
 
         else:
