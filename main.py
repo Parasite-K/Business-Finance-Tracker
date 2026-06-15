@@ -28,6 +28,17 @@ def get_valid_amount():
         except ValueError:
             print("Please enter a valid Number")
 
+def print_transaction(transaction):
+    print(f"Transaction ID: #{transaction['id']}")
+    print(f"Type: {transaction['type']}")
+    print(f"Category: {transaction['category']}")
+    print(f"Description: {transaction['description']}")
+    print(f"Date: {transaction['date']}")
+    print(f"Amount: ₹{transaction['amount']}")
+
+
+
+
 #Core functions
 
 def add_transaction(transaction_type):
@@ -55,7 +66,47 @@ def add_transaction(transaction_type):
 
 
 def del_transaction():
-    pass
+    if not transactions:
+        print("No transactions available.")
+        return
+
+    view_transactions()
+    while True:
+        del_id = input("ENTER TRANSACTION ID FOR THE TRANSACTION YOU WANT TO DELETE: ")
+        try:
+            del_id = int(del_id)
+            break
+        except ValueError:
+            print("Enter a Valid Transaction ID.")
+            continue
+
+    for transaction in transactions:
+        if del_id == transaction["id"]:
+            print("=" * 30)
+            print_transaction(transaction)
+            print("=" * 30)
+            confirm = input("\n1. Confirm"
+                            "\n2. Cancel"
+                            "\n>>  ").strip()
+            
+            if confirm == "1":
+                transactions.remove(transaction)
+                print(f"Transaction : #{transaction['id']} for {transaction['amount']} has been succesfully deleted.")
+                return
+
+            else:
+                print("Not confirmed. Deletion Cancelled.")
+                return
+    
+    print("Transaction ID could not be found. Please try again.")
+
+
+
+
+
+
+
+
 
 def view_transactions(): 
     if not transactions:
@@ -63,12 +114,7 @@ def view_transactions():
 
     for transaction in  transactions:
         print("-" * 30)
-        print(f"Transaction ID: #{transaction['id']}")
-        print(f"Type: {transaction['type']}")
-        print(f"Category: {transaction['category']}")
-        print(f"Description: {transaction['description']}")
-        print(f"Date: {transaction['date']}")
-        print(f"Amount: ₹{transaction['amount']}")
+        print_transaction(transaction)
         print("-" * 30)
 
 def show_summary():
@@ -76,7 +122,7 @@ def show_summary():
     total_expense = 0
 
     if not transactions:
-        print("No transactions available.")
+        print("\nNo transactions available.")
         return
 
     for transaction in transactions:
@@ -123,7 +169,7 @@ def main():
             view_transactions()
 
         elif choice == "3":
-            pass
+            del_transaction()
 
         elif choice == "4":
             show_summary()
