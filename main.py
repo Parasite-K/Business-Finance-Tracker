@@ -1,12 +1,37 @@
+import json
+
 from datetime import datetime
 
-transactions = []
-next_id = 1
+#transactions = []
+
 
 #helper functions
+
+def set_next_id():             #sets next transaction id based on previous saved transactions.
+    global next_id
+
+    if not transactions:
+        next_id = 1
+        
+    else:
+    
+        greatest = 0
+        for transaction in transactions:
+            if transaction["id"] > greatest:
+                greatest = transaction["id"]
+        next_id = greatest + 1
+
+
+
+def save_transactions():
+    with open ("transactions.json" , "w") as f:
+        json.dump(transactions, f , indent=4)
+
+
+
 def get_valid_date():   #Only accept valid dates.
     while True:
-        date = input("Enter the Date (DD/MM/YYYY)")
+        date = input("Enter the Date (DD/MM/YYYY): ")
         
         try:
             datetime.strptime(date, "%d/%m/%Y")
@@ -18,7 +43,7 @@ def get_valid_date():   #Only accept valid dates.
 
 def get_valid_amount():
       while True:      #To make sure a valid integer is entered.
-        amount = input("Enter the Amount:")
+        amount = input("Enter the Amount: ")
         try:
             amount = float(amount)
             if amount < 0:
@@ -59,6 +84,7 @@ def add_transaction(transaction_type):
     }
     
     transactions.append(transaction)
+    save_transactions()
 
     next_id += 1 
 
@@ -91,7 +117,7 @@ def del_transaction():
             
             if confirm == "1":
                 transactions.remove(transaction)
-                print(f"Transaction : #{transaction['id']} for {transaction['amount']} has been succesfully deleted.")
+                print(f"Transaction : #{transaction['id']} for ₹{transaction['amount']} has been succesfully deleted.")
                 return
 
             else:
@@ -99,10 +125,6 @@ def del_transaction():
                 return
     
     print("Transaction ID could not be found. Please try again.")
-
-
-
-
 
 
 
@@ -141,7 +163,13 @@ def show_summary():
     print(f"Total Profit = ₹{profit}")
     print("=" * 30)
 
-
+def load_transaction():
+    global transactions
+    try:
+        with open("transactions.json","r") as f:
+            transactions = json.load(f)
+    except FileNotFoundError:
+        transactions = []
 
 
 #main
@@ -183,6 +211,8 @@ def main():
 
 
 if __name__ == "__main__":
+    load_transaction()
+    set_next_id()
     main()
 
 
