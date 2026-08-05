@@ -10,6 +10,7 @@ A Python project built to learn software engineering fundamentals while creating
 - Date validation
 - Amount validation
 - Financial summary reporting
+- data persistence using JSON
 
 ## Technologies
 
@@ -19,7 +20,6 @@ A Python project built to learn software engineering fundamentals while creating
 
 ## Planned Features
 
-- JSON data storage
 - SQLite database
 - Search and filtering
 - FastAPI backend
