@@ -12,6 +12,7 @@ def set_next_id():             #sets next transaction id based on previous saved
 
     if not transactions:
         next_id = 1
+        return
         
     else:
     
@@ -126,7 +127,79 @@ def del_transaction():
     
     print("Transaction ID could not be found. Please try again.")
 
+def edit_transaction():
+    if not transactions:
+        print("No transactions available.")
+        return
+    
+    view_transactions()
+    while True:
+        edit_id = input("ENTER TRANSACTION ID FOR THE TRANSACTION YOU WANT TO EDIT: ")
+        try:
+            edit_id = int(edit_id)
+            break
+        except ValueError:
+            print("Enter a Valid Transaction ID.")
+            continue
 
+    for transaction in transactions:
+        if edit_id == transaction["id"]:
+            print("=" * 30)
+            print_transaction(transaction)
+            print("=" * 30)
+
+            while True:
+
+                print("\n Choose one of the following:- \n ")
+                choice = input("\n1. Date"
+                             "\n2. Type"
+                             "\n3. Category"
+                             "\n4. Description"
+                             "\n5. Amount "
+                             "\n6. Save and Exit "
+                             "\n7. Exit without saving "
+                             "\n>> ").strip()
+
+                match choice:
+                    case "1":
+                        transaction["date"] = get_valid_date()
+
+                    case "2":
+                        while True:
+                            txn_type = input("\nSelect transaction type (Expense/Income): ").strip().lower()
+                            if txn_type in ["expense" , "income"]:
+                                transaction["type"] = txn_type
+                                break
+                            else:
+                                print("Enter a valid transaction type.")
+                                continue
+
+                    case "3":
+                        transaction["category"] = input("Enter the category: ")
+
+                    case "4":
+                        transaction["description"] = input("Enter a Description: ")
+
+                    case "5": 
+                        transaction["amount"] = get_valid_amount()
+
+                    case "6":
+                        print("Your transaction edits have been saved.")
+                        print("=" * 30)
+                        print_transaction(transaction)
+                        print("=" * 30)
+                        save_transactions()
+                        return
+
+                    case "7":
+                        return
+
+                    case _:
+                        print("Invalid choice.")
+    print("Transaction not found.")
+                        
+                        
+                    
 
 
 
@@ -179,8 +252,9 @@ def main():
         "\n1. Add Transaction"
         "\n2. View Transactions"
         "\n3. Delete a Transaction"
-        "\n4. Show summary for all Transactions"
-        "\n5. Exit"
+        "\n4. Edit a transaction"
+        "\n5. Show summary for all Transactions"
+        "\n6. Exit"
         "\n>> "
     )
         
@@ -200,9 +274,12 @@ def main():
             del_transaction()
 
         elif choice == "4":
-            show_summary()
+            edit_transaction()
 
         elif choice == "5":
+            show_summary()
+
+        elif choice == "6":
             break
 
         else:
