@@ -127,12 +127,16 @@ def del_transaction():
     
     print("Transaction ID could not be found. Please try again.")
 
+
+
 def edit_transaction():
     if not transactions:
         print("No transactions available.")
         return
     
     view_transactions()
+
+    
     while True:
         edit_id = input("ENTER TRANSACTION ID FOR THE TRANSACTION YOU WANT TO EDIT: ")
         try:
@@ -144,11 +148,14 @@ def edit_transaction():
 
     for transaction in transactions:
         if edit_id == transaction["id"]:
-            print("=" * 30)
-            print_transaction(transaction)
-            print("=" * 30)
+            
+
+            edited_transaction = transaction.copy()
 
             while True:
+                print("=" * 30)
+                print_transaction(edited_transaction)
+                print("=" * 30)
 
                 print("\n Choose one of the following:- \n ")
                 choice = input("\n1. Date"
@@ -160,36 +167,45 @@ def edit_transaction():
                              "\n7. Exit without saving "
                              "\n>> ").strip()
 
+                
+
                 match choice:
                     case "1":
-                        transaction["date"] = get_valid_date()
+                        edited_transaction["date"] = get_valid_date()
 
                     case "2":
                         while True:
                             txn_type = input("\nSelect transaction type (Expense/Income): ").strip().lower()
                             if txn_type in ["expense" , "income"]:
-                                transaction["type"] = txn_type
+                                edited_transaction["type"] = txn_type
                                 break
                             else:
                                 print("Enter a valid transaction type.")
                                 continue
 
                     case "3":
-                        transaction["category"] = input("Enter the category: ")
+                        edited_transaction["category"] = input("Enter the category: ")
 
                     case "4":
-                        transaction["description"] = input("Enter a Description: ")
+                        edited_transaction["description"] = input("Enter a Description: ")
 
                     case "5": 
-                        transaction["amount"] = get_valid_amount()
+                        edited_transaction["amount"] = get_valid_amount()
 
                     case "6":
-                        print("Your transaction edits have been saved.")
-                        print("=" * 30)
-                        print_transaction(transaction)
-                        print("=" * 30)
+                        transaction.update(edited_transaction)
                         save_transactions()
+
+
+                        print("The new edited transaction is:-")
+                        print("=" * 30)
+                        print_transaction(edited_transaction)
+                        print("=" * 30)
+
                         return
+
+                        
+                        
 
                     case "7":
                         return
