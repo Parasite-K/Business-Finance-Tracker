@@ -2,12 +2,9 @@ import json
 
 from datetime import datetime
 
-#transactions = []
-
-
 #helper functions
 
-def set_next_id():             #sets next transaction id based on previous saved transactions.
+def set_next_id():            
     global next_id
 
     if not transactions:
@@ -24,13 +21,14 @@ def set_next_id():             #sets next transaction id based on previous saved
 
 
 
+
 def save_transactions():
     with open ("transactions.json" , "w") as f:
         json.dump(transactions, f , indent=4)
 
 
 
-def get_valid_date():   #Only accept valid dates.
+def get_valid_date():   
     while True:
         date = input("Enter the Date (DD/MM/YYYY): ")
         
@@ -43,8 +41,8 @@ def get_valid_date():   #Only accept valid dates.
             print("Invalid Date.")
 
 def get_valid_amount():
-      while True:      #To make sure a valid integer is entered.
-        amount = input("Enter the Amount: ")
+      while True:     
+        amount = input("Enter the Amount: ₹")
         try:
             amount = float(amount)
             if amount < 0:
@@ -53,6 +51,19 @@ def get_valid_amount():
             return amount 
         except ValueError:
             print("Please enter a valid Number")
+
+
+def get_valid_type():                       
+    while True:        
+        txn_type = input("\nSelect transaction type (Expense/Income): ").strip().lower()
+        if txn_type in ["expense" , "income"]:
+            return txn_type
+        else:
+            print("Please enter either Expense or Income.")
+            continue
+
+
+
 
 def print_transaction(transaction):
     print(f"Transaction ID: #{transaction['id']}")
@@ -174,14 +185,7 @@ def edit_transaction():
                         edited_transaction["date"] = get_valid_date()
 
                     case "2":
-                        while True:
-                            txn_type = input("\nSelect transaction type (Expense/Income): ").strip().lower()
-                            if txn_type in ["expense" , "income"]:
-                                edited_transaction["type"] = txn_type
-                                break
-                            else:
-                                print("Enter a valid transaction type.")
-                                continue
+                        edited_transaction["type"] = get_valid_type()
 
                     case "3":
                         edited_transaction["category"] = input("Enter the category: ")
@@ -216,8 +220,6 @@ def edit_transaction():
                         
                         
                     
-
-
 
 def view_transactions(): 
     if not transactions:
@@ -273,33 +275,29 @@ def main():
         "\n6. Exit"
         "\n>> "
     )
-        
-        if choice == "1":
-            while True:        #Make sure only Expense or Income is entered.
-                txn_type = input("\nSelect transaction type (Expense/Income): ").strip().lower()
-                if txn_type in ["expense" , "income"]:
-                    add_transaction(transaction_type=txn_type)
-                    break
-                print("Please enter Expense or Income.")
+        match choice:
 
-                    
-        elif choice == "2":
-            view_transactions()
+            case "1":
+                txn_type = get_valid_type()
+                add_transaction(txn_type)
+                   
+            case "2":
+                view_transactions()
 
-        elif choice == "3":
-            del_transaction()
+            case "3":
+                del_transaction()
 
-        elif choice == "4":
-            edit_transaction()
+            case "4":
+                edit_transaction()
 
-        elif choice == "5":
-            show_summary()
+            case "5":
+                show_summary()
 
-        elif choice == "6":
-            break
+            case "6":
+                return
 
-        else:
-            print("Invalid choice.")
+            case _:
+                print("Invalid choice.")
 
 
 

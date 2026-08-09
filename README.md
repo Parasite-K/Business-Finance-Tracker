@@ -6,10 +6,9 @@ A Python project built to learn software engineering fundamentals while creating
 
 - Add income transactions
 - Add expense transactions
-- View transactions
-- Date validation
-- Amount validation
-- Financial summary reporting
+- Implemented all CRUD features
+- Input validation
+- Basic Financial summary reporting
 - data persistence using JSON
 
 ## Technologies
