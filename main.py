@@ -1,4 +1,5 @@
 import json
+import calendar
 
 from datetime import datetime
 
@@ -25,6 +26,34 @@ def set_next_id():
 def save_transactions():
     with open ("transactions.json" , "w") as f:
         json.dump(transactions, f , indent=4)
+
+def get_valid_month():
+    while True:
+        query_month = input("Enter the month number(1-12): ")
+        try:
+            query_month = int(query_month)
+            if 1 <= query_month <= 12:
+                return query_month
+            else:
+                print("Not a valid month (Must be between 1 - 12)")
+        except ValueError:
+            print("Enter a valid month number.")
+
+def get_valid_year():
+    while True:
+        query_year = input("Enter the Year:")
+        try:
+            query_year = int(query_year)
+            if 1<= query_year <= 9999:
+                return query_year
+            else:
+                print("Not a valid Year.")
+        except ValueError:
+            print("Enter a valid Year.")
+
+def get_month_year(date):
+    _, month, year = date.split("/")
+    return int(month), int(year)
 
 
 
@@ -230,29 +259,123 @@ def view_transactions():
         print_transaction(transaction)
         print("-" * 30)
 
-def show_summary():
-    total_income = 0
-    total_expense = 0
+#CORE REPORT FUNCTIONS:-
+def monthly_report():
+    query_month = get_valid_month()
+    query_year = get_valid_year()
+    txn_count = 0
+    income = 0
+    expenses = 0 
+
+    if not transactions:
+        print("No transactions available.")
+
+    for transaction in transactions:
+        txn_month , txn_year = get_month_year(transaction["date"])
+        if query_month == txn_month and query_year == txn_year:
+            txn_count += 1
+
+            if transaction["type"] == "income":
+                income += transaction["amount"]
+            else:
+                expenses += transaction["amount"]
+
+    return txn_count, income, expenses, query_month, query_year
+
+def yearly_report():
+    query_year = get_valid_year()
+    txn_count = 0
+    income = 0 
+    expenses = 0 
 
     if not transactions:
         print("\nNo transactions available.")
         return
 
     for transaction in transactions:
+        _, txn_year = get_month_year(transaction["date"])
+        if query_year == txn_year:
+            txn_count += 1
+
+            if transaction["type"] == "income":
+                income += transaction["amount"]
+            else:
+                expenses += transaction["amount"]
+
+    return txn_count, income, expenses, query_year
+
+
+def financial_summary():
+    total_income = 0
+    total_expense = 0
+    txn_count = 0 
+
+    if not transactions:
+        print("\nNo transactions available.")
+        return
+
+    for transaction in transactions:
+        txn_count += 1
         if transaction["type"] == "income":
             total_income += transaction["amount"]
 
         elif transaction["type"] == "expense":
             total_expense += transaction["amount"]
 
-    profit = total_income - total_expense 
+    return txn_count, total_income, total_expense
 
-    print("=" * 30)
-    print("SUMMARY FOR ALL TRANSACTIONS:- ")
-    print(f"Total Income = +₹{total_income}")
-    print(f"Total Expense = -₹{total_expense}")
-    print(f"Total Profit = ₹{profit}")
-    print("=" * 30)
+def reports_menu():
+    while True:
+        print("\n======REPORTS======")
+        choice = input(
+            "\n1. Financial Summary"
+            "\n2. Monthly Report"
+            "\n3. Yearly Report"
+            "\n4. Category based report"
+            "\n5. Back"
+            "\n>> ").strip()
+
+        match choice:
+            case "1":
+                txn_count, income, expenses = financial_summary()
+
+                print("\n===== FINANCIAL SUMMARY =====")
+                print(f"Number of Transactions: {txn_count}")
+                print(f"Total Income: ₹{income}")
+                print(f"Total Expenses: ₹{expenses}")
+                print(f"Profit/Loss: ₹{income - expenses}")
+
+            case "2":
+                txn_count, income, expenses, query_month, query_year = monthly_report()
+                month_name = calendar.month_name[query_month]
+
+                print(f"\n===== MONTHLY REPORT for {month_name} {query_year} =====")
+                print(f"Transactions: {txn_count}")
+                print(f"Income: ₹{income}")
+                print(f"Expenses: ₹{expenses}")
+                print(f"Profit/Loss: ₹{income - expenses}")
+
+            case "3":
+                txn_count, income, expenses, query_year = yearly_report()
+
+                print(f"\n===== YEARLY REPORT for {query_year} =====")
+                print(f"Transactions: {txn_count}")
+                print(f"Income: ₹{income}")
+                print(f"Expenses: ₹{expenses}")
+                print(f"Profit/Loss: ₹{income - expenses}")
+
+            case "4":
+                print("Coming soon...")
+
+            case "5":
+                return
+
+            case _:
+                print("Invalid choice.")
+
+
+
+
 
 def load_transaction():
     global transactions
@@ -271,10 +394,10 @@ def main():
         "\n2. View Transactions"
         "\n3. Delete a Transaction"
         "\n4. Edit a transaction"
-        "\n5. Show summary for all Transactions"
+        "\n5. View Reports"
         "\n6. Exit"
         "\n>> "
-    )
+    ).strip()
         match choice:
 
             case "1":
@@ -291,7 +414,7 @@ def main():
                 edit_transaction()
 
             case "5":
-                show_summary()
+                reports_menu()
 
             case "6":
                 return

@@ -3,12 +3,11 @@
 A Python project built to learn software engineering fundamentals while creating a useful finance management application for businesses.
 
 ## Current Features
-
 - Add income transactions
 - Add expense transactions
 - Implemented all CRUD features
 - Input validation
-- Basic Financial summary reporting
+- Monthly, yearly financial reports.
 - data persistence using JSON
 
 ## Technologies
