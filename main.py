@@ -343,6 +343,26 @@ def yearly_report():
 
     return txn_count, income, expenses, query_year
 
+def category_report():
+    txn_count = 0
+    total = 0 
+
+    if not transactions:
+            print("\nNo transactions available.")
+            return
+
+    print("Please select the transaction type of the category you are looking for.")
+    txn_type = get_valid_type()
+    query_category = get_valid_category(txn_type)
+
+    for transaction in transactions:
+        if transaction["category"] == query_category:
+            txn_count += 1 
+            total += transaction["amount"]
+
+
+    return txn_count, total, query_category, txn_type
+
 
 def financial_summary():
     total_income = 0
@@ -362,6 +382,7 @@ def financial_summary():
             total_expense += transaction["amount"]
 
     return txn_count, total_income, total_expense
+
 
 def reports_menu():
     while True:
@@ -404,14 +425,19 @@ def reports_menu():
                 print(f"Profit/Loss: ₹{income - expenses}")
 
             case "4":
-                print("Coming soon...")
+                txn_count, total, query_category, txn_type = category_report()
+
+                print(f"\n===== CATEGORY REPORT: {query_category} =====")
+                print(f"Type: {txn_type.title()}")
+                print(f"Transactions: {txn_count}")
+                print(f"Total {txn_type.title()}: ₹{total}")
+
 
             case "5":
                 return
 
             case _:
                 print("Invalid choice.")
-
 
 
 
