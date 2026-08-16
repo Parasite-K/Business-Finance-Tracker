@@ -3,6 +3,25 @@ import calendar
 
 from datetime import datetime
 
+categories = {
+    "income": [
+        "Sales",
+        "Services",
+        "Other Income"
+    ],
+    "expense": [
+        "Materials",
+        "Salary",
+        "Rent",
+        "Utilities",
+        "Fuel",
+        "Marketing",
+        "Equipment",
+        "Travel",
+        "Miscellaneous"
+    ]
+}
+
 #helper functions
 
 def set_next_id():            
@@ -19,7 +38,6 @@ def set_next_id():
             if transaction["id"] > greatest:
                 greatest = transaction["id"]
         next_id = greatest + 1
-
 
 
 
@@ -91,6 +109,26 @@ def get_valid_type():
             print("Please enter either Expense or Income.")
             continue
 
+def get_valid_category(txn_type):
+    category_list = categories[txn_type]
+
+    while True:
+        print("\nSelect your category:")
+
+        for i , category in enumerate(category_list, 1):
+            print(f"{i}. {category}")
+        choice = input(">> ").strip()
+
+        try:
+            choice = int(choice)
+            if 1 <= choice <= len(category_list):
+                return category_list[choice - 1]
+
+            else:
+                print("Please choose a valid Category.")
+        except:
+            print("Please enter a category number.")
+  
 
 
 
@@ -111,7 +149,7 @@ def add_transaction(transaction_type):
     global next_id
 
     date = get_valid_date()
-    category = input("Enter the Category: ")
+    category = get_valid_category(transaction_type)
     description = input("Enter the Description: ")
     amount = get_valid_amount()
 
@@ -158,6 +196,7 @@ def del_transaction():
             
             if confirm == "1":
                 transactions.remove(transaction)
+                save_transactions()
                 print(f"Transaction : #{transaction['id']} for ₹{transaction['amount']} has been succesfully deleted.")
                 return
 
@@ -217,7 +256,7 @@ def edit_transaction():
                         edited_transaction["type"] = get_valid_type()
 
                     case "3":
-                        edited_transaction["category"] = input("Enter the category: ")
+                        edited_transaction["category"] = get_valid_category(edited_transaction["type"])
 
                     case "4":
                         edited_transaction["description"] = input("Enter a Description: ")
