@@ -3,6 +3,21 @@ import calendar
 
 from datetime import datetime
 
+from validation import (
+    get_valid_date,
+    get_valid_month,
+    get_valid_year,
+    get_month_year,
+    get_valid_amount,
+    get_valid_type,
+    get_valid_category
+)
+
+from storage import save_transactions, load_transaction, set_next_id
+
+import data
+
+
 categories = {
     "income": [
         "Sales",
@@ -22,113 +37,8 @@ categories = {
     ]
 }
 
-#helper functions
+#helper fu
 
-def set_next_id():            
-    global next_id
-
-    if not transactions:
-        next_id = 1
-        return
-        
-    else:
-    
-        greatest = 0
-        for transaction in transactions:
-            if transaction["id"] > greatest:
-                greatest = transaction["id"]
-        next_id = greatest + 1
-
-
-
-def save_transactions():
-    with open ("transactions.json" , "w") as f:
-        json.dump(transactions, f , indent=4)
-
-def get_valid_month():
-    while True:
-        query_month = input("Enter the month number(1-12): ")
-        try:
-            query_month = int(query_month)
-            if 1 <= query_month <= 12:
-                return query_month
-            else:
-                print("Not a valid month (Must be between 1 - 12)")
-        except ValueError:
-            print("Enter a valid month number.")
-
-def get_valid_year():
-    while True:
-        query_year = input("Enter the Year:")
-        try:
-            query_year = int(query_year)
-            if 1<= query_year <= 9999:
-                return query_year
-            else:
-                print("Not a valid Year.")
-        except ValueError:
-            print("Enter a valid Year.")
-
-def get_month_year(date):
-    _, month, year = date.split("/")
-    return int(month), int(year)
-
-
-
-def get_valid_date():   
-    while True:
-        date = input("Enter the Date (DD/MM/YYYY): ")
-        
-        try:
-            datetime.strptime(date, "%d/%m/%Y")
-            return date
-            
-        
-        except ValueError:
-            print("Invalid Date.")
-
-def get_valid_amount():
-      while True:     
-        amount = input("Enter the Amount: ₹")
-        try:
-            amount = float(amount)
-            if amount < 0:
-                print("Amount cannot be negative.")
-                continue
-            return amount 
-        except ValueError:
-            print("Please enter a valid Number")
-
-
-def get_valid_type():                       
-    while True:        
-        txn_type = input("\nSelect transaction type (Expense/Income): ").strip().lower()
-        if txn_type in ["expense" , "income"]:
-            return txn_type
-        else:
-            print("Please enter either Expense or Income.")
-            continue
-
-def get_valid_category(txn_type):
-    category_list = categories[txn_type]
-
-    while True:
-        print("\nSelect your category:")
-
-        for i , category in enumerate(category_list, 1):
-            print(f"{i}. {category}")
-        choice = input(">> ").strip()
-
-        try:
-            choice = int(choice)
-            if 1 <= choice <= len(category_list):
-                return category_list[choice - 1]
-
-            else:
-                print("Please choose a valid Category.")
-        except:
-            print("Please enter a category number.")
-  
 
 
 
@@ -146,7 +56,6 @@ def print_transaction(transaction):
 #Core functions
 
 def add_transaction(transaction_type):
-    global next_id
 
     date = get_valid_date()
     category = get_valid_category(transaction_type)
@@ -154,7 +63,7 @@ def add_transaction(transaction_type):
     amount = get_valid_amount()
 
     transaction = {
-        "id": next_id,
+        "id": data.next_id,
         "type": transaction_type,
         "category": category,
         "description": description,
@@ -162,16 +71,16 @@ def add_transaction(transaction_type):
         "amount": amount
     }
     
-    transactions.append(transaction)
+    data.transactions.append(transaction)
     save_transactions()
 
-    next_id += 1 
+    data.next_id += 1 
 
     print("Transaction added successfully!")
 
 
 def del_transaction():
-    if not transactions:
+    if not data.transactions:
         print("No transactions available.")
         return
 
@@ -185,7 +94,7 @@ def del_transaction():
             print("Enter a Valid Transaction ID.")
             continue
 
-    for transaction in transactions:
+    for transaction in data.transactions:
         if del_id == transaction["id"]:
             print("=" * 30)
             print_transaction(transaction)
@@ -195,7 +104,7 @@ def del_transaction():
                             "\n>>  ").strip()
             
             if confirm == "1":
-                transactions.remove(transaction)
+                data.transactions.remove(transaction)
                 save_transactions()
                 print(f"Transaction : #{transaction['id']} for ₹{transaction['amount']} has been succesfully deleted.")
                 return
@@ -209,7 +118,7 @@ def del_transaction():
 
 
 def edit_transaction():
-    if not transactions:
+    if not data.transactions:
         print("No transactions available.")
         return
     
@@ -225,7 +134,7 @@ def edit_transaction():
             print("Enter a Valid Transaction ID.")
             continue
 
-    for transaction in transactions:
+    for transaction in data.transactions:
         if edit_id == transaction["id"]:
             
 
@@ -253,7 +162,11 @@ def edit_transaction():
                         edited_transaction["date"] = get_valid_date()
 
                     case "2":
-                        edited_transaction["type"] = get_valid_type()
+                        new_type = get_valid_type()
+                        edited_transaction["type"] = new_type
+                        print(f"Please Select a category for your new transaction type: {new_type}")
+
+                        edited_transaction["category"] = get_valid_category(new_type)
 
                     case "3":
                         edited_transaction["category"] = get_valid_category(edited_transaction["type"])
@@ -290,10 +203,10 @@ def edit_transaction():
                     
 
 def view_transactions(): 
-    if not transactions:
+    if not data.transactions:
         print("No transactions found.")
 
-    for transaction in  transactions:
+    for transaction in  data.transactions:
         print("-" * 30)
         print_transaction(transaction)
         print("-" * 30)
@@ -306,10 +219,10 @@ def monthly_report():
     income = 0
     expenses = 0 
 
-    if not transactions:
+    if not data.transactions:
         print("No transactions available.")
 
-    for transaction in transactions:
+    for transaction in data.transactions:
         txn_month , txn_year = get_month_year(transaction["date"])
         if query_month == txn_month and query_year == txn_year:
             txn_count += 1
@@ -327,11 +240,11 @@ def yearly_report():
     income = 0 
     expenses = 0 
 
-    if not transactions:
+    if not data.transactions:
         print("\nNo transactions available.")
         return
 
-    for transaction in transactions:
+    for transaction in data.transactions:
         _, txn_year = get_month_year(transaction["date"])
         if query_year == txn_year:
             txn_count += 1
@@ -347,7 +260,7 @@ def category_report():
     txn_count = 0
     total = 0 
 
-    if not transactions:
+    if not data.transactions:
             print("\nNo transactions available.")
             return
 
@@ -355,7 +268,7 @@ def category_report():
     txn_type = get_valid_type()
     query_category = get_valid_category(txn_type)
 
-    for transaction in transactions:
+    for transaction in data.transactions:
         if transaction["category"] == query_category:
             txn_count += 1 
             total += transaction["amount"]
@@ -369,11 +282,11 @@ def financial_summary():
     total_expense = 0
     txn_count = 0 
 
-    if not transactions:
+    if not data.transactions:
         print("\nNo transactions available.")
         return
 
-    for transaction in transactions:
+    for transaction in data.transactions:
         txn_count += 1
         if transaction["type"] == "income":
             total_income += transaction["amount"]
@@ -441,14 +354,6 @@ def reports_menu():
 
 
 
-
-def load_transaction():
-    global transactions
-    try:
-        with open("transactions.json","r") as f:
-            transactions = json.load(f)
-    except FileNotFoundError:
-        transactions = []
 
 
 #main
