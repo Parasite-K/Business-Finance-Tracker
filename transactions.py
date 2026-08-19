@@ -9,16 +9,16 @@ from validation import(
 )
 
 
-def add_transaction(transaction_type):
-
+def add_transaction():
+    txn_type = get_valid_type()
     date = get_valid_date()
-    category = get_valid_category(transaction_type)
+    category = get_valid_category(txn_type)
     description = input("Enter the Description: ")
     amount = get_valid_amount()
 
     transaction = {
         "id": data.next_id,
-        "type": transaction_type,
+        "type": txn_type,
         "category": category,
         "description": description,
         "date": date,
