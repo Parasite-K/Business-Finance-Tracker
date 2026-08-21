@@ -1,6 +1,9 @@
 transactions = []
 next_id = 1
 
+projects = []
+next_project_id = 1
+
 categories = {
     "income": [
         "Sales",

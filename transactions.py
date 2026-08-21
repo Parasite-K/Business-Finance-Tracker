@@ -30,7 +30,8 @@ def add_transaction():
 
     data.next_id += 1 
 
-    print("Transaction added successfully!")
+    print(f"Transaction for ₹{amount} succesfully added!")
+    print(f"Transaction id: {transaction["id"]}")
 
 
 def del_transaction():

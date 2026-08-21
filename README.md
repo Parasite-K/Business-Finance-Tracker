@@ -18,6 +18,7 @@ A Python project built to learn software engineering fundamentals while creating
 
 ## Planned Features
 
+- Project based transactions.
 - SQLite database
 - Search and filtering
 - FastAPI backend

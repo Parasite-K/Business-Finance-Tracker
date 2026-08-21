@@ -1,7 +1,6 @@
-
 import calendar
 
-from storage import load_transaction, set_next_id
+from storage import load_transactions, set_next_id, load_projects, set_next_project_id
 
 from reports import (
     financial_summary,
@@ -17,11 +16,12 @@ from transactions import(
     view_transactions
 )
 
+from projects import add_project
 
 #Reports menu
 def reports_menu():
     while True:
-        print("\n======REPORTS======")
+        print("\n====== REPORTS MENU ======")
         choice = input(
             "\n1. Financial Summary"
             "\n2. Monthly Report"
@@ -74,6 +74,39 @@ def reports_menu():
             case _:
                 print("Invalid choice.")
 
+#Projects Menu
+def projects_menu():
+    while True:
+        print("\n====== PROJECTS MENU =====")
+        choice = input(
+            "\n1. View Projects"
+            "\n2. Add new Project"
+            "\n3. Edit a Project"
+            "\n4. Delete a project"
+            "\n5. Back"
+            "\n>> "
+        ).strip()
+
+        match choice:
+            case "1":
+                print("Coming soon.")
+
+            case "2":
+                add_project()
+
+            case "3":
+                print("Coming soon.")
+
+            case "4":
+                print("Coming soon.")
+
+            case "5":
+                return
+
+            case _:
+                print("Invalid Choice.")
+
+
 
 
 #main
@@ -84,8 +117,9 @@ def main():
         "\n2. View Transactions"
         "\n3. Delete a Transaction"
         "\n4. Edit a transaction"
-        "\n5. View Reports"
-        "\n6. Exit"
+        "\n5. Reports menu"
+        "\n6. Projects menu"
+        "\n7. Exit"
         "\n>> "
     ).strip()
         match choice:
@@ -106,6 +140,9 @@ def main():
                 reports_menu()
 
             case "6":
+                projects_menu()
+                
+            case "7":
                 return
 
             case _:
@@ -113,8 +150,13 @@ def main():
 
 
 if __name__ == "__main__":
-    load_transaction()
+    load_projects()
+
+    set_next_project_id()
+
+    load_transactions()
     set_next_id()
+
     main()
 
 
