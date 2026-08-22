@@ -161,6 +161,7 @@ def edit_transaction():
 def view_transactions(): 
     if not data.transactions:
         print("No transactions found.")
+        return
 
     for transaction in  data.transactions:
         print("-" * 30)
