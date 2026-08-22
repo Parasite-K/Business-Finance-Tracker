@@ -18,6 +18,41 @@ from transactions import(
 
 from projects import add_project
 
+# Transaction Menu
+def transactions_menu():
+    while True:
+        print("\n===== TRANSACTIONS MENU =====")
+        choice = input(
+                "\n1. Add a Transaction"
+                "\n2. View Transactions"
+                "\n3. Delete a Transaction"
+                "\n4. Edit a transaction"
+                "\n5. Back"
+                "\n>> ").strip()
+
+        match choice:
+            case "1":
+                add_transaction()
+                               
+            case "2":
+                view_transactions()
+            
+            case "3":
+                del_transaction()
+            
+            case "4":
+                edit_transaction()
+
+            case "5":
+                return
+
+            case _:
+                print("Invalid choice.")
+            
+
+
+
+
 #Reports menu
 def reports_menu():
     while True:
@@ -113,36 +148,24 @@ def projects_menu():
 def main():
     while True:
         choice = input(
-        "\n1. Add Transaction"
-        "\n2. View Transactions"
-        "\n3. Delete a Transaction"
-        "\n4. Edit a transaction"
-        "\n5. Reports menu"
-        "\n6. Projects menu"
-        "\n7. Exit"
+        "\n1. Transactions menu"
+        "\n2. Reports menu"
+        "\n3. Projects menu"
+        "\n4. Exit"
         "\n>> "
     ).strip()
         match choice:
 
             case "1":
-                add_transaction()
-                   
+                transactions_menu()
+
             case "2":
-                view_transactions()
-
-            case "3":
-                del_transaction()
-
-            case "4":
-                edit_transaction()
-
-            case "5":
                 reports_menu()
 
-            case "6":
+            case "3":
                 projects_menu()
                 
-            case "7":
+            case "4":
                 return
 
             case _:
