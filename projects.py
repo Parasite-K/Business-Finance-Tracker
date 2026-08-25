@@ -56,7 +56,7 @@ def del_project():
 
     view_projects()
     while True:
-        del_id = input("ENTER PROJECT ID FOR THE TRANSACTION YOU WANT TO DELETE: #")
+        del_id = input("ENTER PROJECT ID FOR THE PROJECT YOU WANT TO DELETE: #")
         try:
             del_id = int(del_id)
             break
@@ -69,6 +69,14 @@ def del_project():
             print("=" * 30)
             print_project(project)
             print("=" * 30)
+
+            txn_count , txn_ids  = get_project_transaction_ids(del_id)
+            if txn_count >= 1 :
+                print(f"This project cannot be deleted because it has {txn_count} transactions associated to it.")
+                print(f"Associated Transaction Ids: {txn_ids}")
+                return
+                        
+      
             confirm = input("\n1. Confirm"
                             "\n2. Cancel"
                             "\n>>  ").strip()
@@ -76,7 +84,7 @@ def del_project():
             if confirm == "1":
                 data.projects.remove(project)
                 save_projects()
-                print(f"Transaction : #{project['id']} has been successfully deleted.")
+                print(f"Project ID: #{project['id']} has been successfully deleted.")
                 return
 
             else:
@@ -84,6 +92,21 @@ def del_project():
                 return
     
     print("Project ID could not be found. Please try again.")
+
+
+def get_project_transaction_ids(project_id):
+    txn_ids = []
+
+    if not data.transactions:
+        return len(txn_ids), txn_ids
+
+    for transaction in data.transactions:
+        if transaction["project_id"] == project_id:
+            txn_ids.append(transaction["id"])
+
+    return len(txn_ids), txn_ids
+
+
 
 
 
@@ -101,7 +124,7 @@ def edit_project():
             edit_id = int(edit_id)
             break
         except ValueError:
-            print("Enter a Valid Transaction ID.")
+            print("Enter a Valid Project ID.")
             continue
 
     for project in data.projects:
@@ -156,8 +179,6 @@ def edit_project():
 
 
 
-
-
 def print_project(project):
     print(f"Project ID: #{project['id']}")
     print(f"Project Name : {project['name']}")
@@ -165,3 +186,29 @@ def print_project(project):
     print(f"Start date : {project['start_date']}")
     print(f"End date : {project['end_date']}")
     print(f"Estimated Revenue : ₹{project['estimated_revenue']}")
+
+    txn_count , total_income, total_expense = get_project_stats(project['id'])
+
+    print(f"Total transactions: {txn_count}")
+    print(f"total income: ₹{total_income}")
+    print(f"Total expense: ₹{total_expense}")
+    print(f"Profit/Loss: ₹{total_income - total_expense}")
+
+def get_project_stats(project_id):
+    txn_count = 0
+    income = 0 
+    expense = 0 
+
+    for transaction in data.transactions:
+        if transaction["project_id"] == project_id:
+            if transaction["type"] == "income":
+                income += transaction["amount"]
+            else:
+                expense += transaction["amount"]
+
+            txn_count += 1
+
+    return txn_count, income, expense
+
+
+            
