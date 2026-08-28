@@ -180,19 +180,23 @@ def edit_project():
 
 
 def print_project(project):
+    print("=" * 30)
     print(f"Project ID: #{project['id']}")
     print(f"Project Name : {project['name']}")
     #print(f"Client ID : {project['']}")
-    print(f"Start date : {project['start_date']}")
-    print(f"End date : {project['end_date']}")
+    print(f"Start Date : {project['start_date']}")
+    print(f"End Date : {project['end_date']}")
     print(f"Estimated Revenue : ₹{project['estimated_revenue']}")
 
     txn_count , total_income, total_expense = get_project_stats(project['id'])
 
-    print(f"Total transactions: {txn_count}")
-    print(f"total income: ₹{total_income}")
-    print(f"Total expense: ₹{total_expense}")
+    print("------- Financial summary -------")
+    
+    print(f"Total Transactions: {txn_count}")
+    print(f"total Income: ₹{total_income}")
+    print(f"Total Expense: ₹{total_expense}")
     print(f"Profit/Loss: ₹{total_income - total_expense}")
+    print("=" * 30)
 
 def get_project_stats(project_id):
     txn_count = 0

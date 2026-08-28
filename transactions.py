@@ -34,7 +34,7 @@ def add_transaction():
 
 
     print(f"Transaction for ₹{amount} succesfully added!")
-    print(f"Transaction id: {transaction["id"]}")
+    print(f"Transaction id: #{transaction["id"]}")
 
 
 def del_transaction():
@@ -111,17 +111,20 @@ def edit_transaction():
                              "\n3. Category"
                              "\n4. Description"
                              "\n5. Amount "
-                             "\n6. Save and Exit "
-                             "\n7. Exit without saving "
+                             "\n6. Project"
+                             "\n7. Save and Exit "
+                             "\n8. Exit without saving "
                              "\n>> ").strip()
 
                 
 
                 match choice:
                     case "1":
+                        print("====== EDITING DATE ======\n")
                         edited_transaction["date"] = get_valid_date()
 
                     case "2":
+                        print("====== EDITING TYPE ======\n")
                         new_type = get_valid_type()
                         edited_transaction["type"] = new_type
                         print(f"Please Select a category for your new transaction type: {new_type}")
@@ -129,15 +132,22 @@ def edit_transaction():
                         edited_transaction["category"] = get_valid_category(new_type)
 
                     case "3":
+                        print("====== EDITING CATEGORY ======\n")
                         edited_transaction["category"] = get_valid_category(edited_transaction["type"])
 
                     case "4":
+                        print("====== EDITING DESCRIPTION ======\n")
                         edited_transaction["description"] = input("Enter a Description: ")
 
                     case "5": 
+                        print("====== EDITING AMOUNT ======")
                         edited_transaction["amount"] = get_valid_amount()
 
                     case "6":
+                        print("====== EDITING PROJECT ======")
+                        edited_transaction["project_id"] = get_project_assignment()
+
+                    case "7":
                         transaction.update(edited_transaction)
                         save_transactions()
 
@@ -149,10 +159,8 @@ def edit_transaction():
 
                         return
 
-                        
-                        
-
-                    case "7":
+                
+                    case "8":
                         return
 
                     case _:
