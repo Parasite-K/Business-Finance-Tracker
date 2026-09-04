@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import data
 from validation import get_valid_date, get_valid_amount
 from storage import save_projects
@@ -14,10 +16,18 @@ def add_project():
             print("Project name cannot be empty.")
             continue
 
-    print("\nPlease enter the Start Date of the Project.")
-    start_date = get_valid_date()
-    print("\nPlease enter the End Date of the Project.")
-    end_date = get_valid_date()
+    while True:
+        print("\nPlease enter the Start Date of the Project.")
+        start_date = get_valid_date()
+        print("\nPlease enter the End Date of the Project.")
+        end_date = get_valid_date()
+
+        if datetime.strptime(start_date, "%d/%m/%Y") >= datetime.strptime(end_date, "%d/%m/%Y"):
+            print("End Date must be after the Start date.")
+            continue
+        break
+
+
 
     print("\nPlease enter the Estimated Revenue amount of this Project.")
     estimated_revenue = get_valid_amount()
