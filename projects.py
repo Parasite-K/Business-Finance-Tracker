@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, date
 
 import data
 from validation import get_valid_date, get_valid_amount
-from storage import save_projects
+from storage import save_project , load_projects, update_project
 
 
 def add_project():
@@ -49,15 +49,33 @@ def add_project():
     print(f"\nProject '{project_name}' created successfully.")
     print(f"Project ID: {project['id']}")
 
+#def view_projects():
+    #if not data.projects:
+      #  print("No existing projects available.")
+      #  return
+
+   # for project in data.projects:#
+   #     print("=" * 30)
+      #  print_project(project)
+     #   print("=" * 30)
+
+  #new
 def view_projects():
-    if not data.projects:
+    projects = load_projects()
+
+    if not projects:
         print("No existing projects available.")
         return
 
-    for project in data.projects:
-        print("=" * 30)
+    for project in projects:
         print_project(project)
-        print("=" * 30)
+
+
+
+
+
+
+
 
 def del_project():
     if not data.projects:
@@ -122,12 +140,14 @@ def get_project_transaction_ids(project_id):
 
 
 def edit_project():
-    if not data.projects:
+    projects = load_projects()
+
+    if not projects:
         print("No projects available.")
         return
     
     view_projects()
-  
+
     while True:
         edit_id = input("ENTER PROJECT ID FOR THE PROJECT YOU WANT TO EDIT: #")
         try:
@@ -137,9 +157,9 @@ def edit_project():
             print("Enter a Valid Project ID.")
             continue
 
-    for project in data.projects:
+    for project in projects:
         if edit_id == project["id"]:
-            
+
             edited_project = project.copy()
 
             while True:
@@ -172,9 +192,9 @@ def edit_project():
                         edited_project['estimated_revenue'] = get_valid_amount()
 
                     case "5":
-                        project.update(edited_project)
-                        save_projects()
-                        
+
+                        update_project(edited_project["name"], edited_project["start_date"], edited_project["end_date"], edited_project["estimated_revenue"], edit_id)
+
                         
                         print("The new edited project is:-")
                         print("=" * 30)
@@ -194,19 +214,19 @@ def print_project(project):
     print(f"Project ID: #{project['id']}")
     print(f"Project Name : {project['name']}")
     #print(f"Client ID : {project['']}")
-    print(f"Start Date : {project['start_date']}")
-    print(f"End Date : {project['end_date']}")
+    print(f"Start Date : {project['start_date'].strftime("%d/%m/%Y")}")
+    print(f"End Date : {project['end_date'].strftime("%d/%m/%Y")}")
     print(f"Estimated Revenue : ₹{project['estimated_revenue']}")
 
-    txn_count , total_income, total_expense = get_project_stats(project['id'])
+    #txn_count , total_income, total_expense = get_project_stats(project['id'])
 
-    print("------- Financial summary -------")
+    #print("------- Financial summary -------")
     
-    print(f"Total Transactions: {txn_count}")
-    print(f"total Income: ₹{total_income}")
-    print(f"Total Expense: ₹{total_expense}")
-    print(f"Profit/Loss: ₹{total_income - total_expense}")
-    print("=" * 30)
+    #print(f"Total Transactions: {txn_count}")
+    #print(f"total Income: ₹{total_income}")
+    #print(f"Total Expense: ₹{total_expense}")
+    #print(f"Profit/Loss: ₹{total_income - total_expense}")
+    #print("=" * 30)
 
 def get_project_stats(project_id):
     txn_count = 0
@@ -225,4 +245,3 @@ def get_project_stats(project_id):
     return txn_count, income, expense
 
 
-            

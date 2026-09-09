@@ -8,12 +8,15 @@ def get_valid_date():
         date = input("Enter the Date (DD/MM/YYYY): ")
         
         try:
-            datetime.strptime(date, "%d/%m/%Y")
+            date = datetime.strptime(date, "%d/%m/%Y").date()
             return date
             
         
         except ValueError:
             print("Invalid Date.")
+
+
+
 
 def get_valid_month():
     while True:
@@ -26,6 +29,7 @@ def get_valid_month():
                 print("Not a valid month (Must be between 1 - 12)")
         except ValueError:
             print("Enter a valid month number.")
+
 
 
 def get_valid_year():
@@ -41,8 +45,8 @@ def get_valid_year():
             print("Enter a valid Year.")
 
 def get_month_year(date):
-    _, month, year = date.split("/")
-    return int(month), int(year)
+    return date.month , date.year
+
 
 def get_valid_amount():
       while True:     
