@@ -9,17 +9,19 @@ A Python project built to learn software engineering fundamentals while creating
 - Input validation
 - Monthly, yearly financial reports.
 - data persistence using JSON
+- Project based transactions.
 
 ## Technologies
 
 - Python
 - Git
 - GitHub
+- PostgreSQL using psycopg3
 
 ## Planned Features
 
-- Project based transactions.
-- SQLite database
+
+- PostgreSQL database
 - Search and filtering
 - FastAPI backend
 - User accounts

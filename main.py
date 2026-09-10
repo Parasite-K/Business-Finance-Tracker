@@ -1,7 +1,5 @@
 import calendar
 
-from storage import load_transactions, set_next_id, load_projects, set_next_project_id
-
 from reports import (
     financial_summary,
     monthly_report,
@@ -13,8 +11,8 @@ from transactions import(
     add_transaction,
     del_transaction,
     edit_transaction,
-    view_transactions
-)
+    view_transactions)
+
 
 from projects import (
     add_project,
@@ -47,7 +45,7 @@ def transactions_menu():
             case "3":
                 del_transaction()
             
-            case "4":
+            case "4":   
                 edit_transaction()
 
             case "5":
@@ -180,13 +178,6 @@ def main():
 
 
 if __name__ == "__main__":
-    load_projects()
-
-    set_next_project_id()
-
-    load_transactions()
-    set_next_id()
-
     main()
 
 

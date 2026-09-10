@@ -1,8 +1,13 @@
-from datetime import datetime, date
 
-import data
 from validation import get_valid_date, get_valid_amount
-from storage import save_project , load_projects, update_project
+
+from storage import (
+    save_project , 
+    load_projects, 
+    update_project, 
+    delete_project,
+    get_project_stats,
+)
 
 
 def add_project():
@@ -22,42 +27,22 @@ def add_project():
         print("\nPlease enter the End Date of the Project.")
         end_date = get_valid_date()
 
-        if datetime.strptime(start_date, "%d/%m/%Y") >= datetime.strptime(end_date, "%d/%m/%Y"):
+        if start_date > end_date:
             print("End Date must be after the Start date.")
             continue
         break
 
 
-
     print("\nPlease enter the Estimated Revenue amount of this Project.")
     estimated_revenue = get_valid_amount()
 
-    project = {
-        "id" : data.next_project_id,
-        "name" : project_name,
-        "client_id" : None,
-        "start_date" : start_date,
-        "end_date" : end_date,
-        "estimated_revenue" : estimated_revenue,
-
-    }
-
-    data.projects.append(project)
-    data.next_project_id += 1
-    save_projects()
+    project_id = save_project(project_name, None, start_date, end_date, estimated_revenue)
 
     print(f"\nProject '{project_name}' created successfully.")
-    print(f"Project ID: {project['id']}")
+    print(f"\nProject ID = #{project_id}")
+    
 
-#def view_projects():
-    #if not data.projects:
-      #  print("No existing projects available.")
-      #  return
 
-   # for project in data.projects:#
-   #     print("=" * 30)
-      #  print_project(project)
-     #   print("=" * 30)
 
   #new
 def view_projects():
@@ -73,12 +58,11 @@ def view_projects():
 
 
 
-
-
-
-
 def del_project():
-    if not data.projects:
+    projects = load_projects()
+
+
+    if not projects:
         print("No projects available.")
         return
 
@@ -92,17 +76,18 @@ def del_project():
             print("Enter a Valid Project ID.")
             continue
 
-    for project in data.projects:
+    for project in projects:
         if del_id == project["id"]:
             print("=" * 30)
             print_project(project)
             print("=" * 30)
 
-            txn_count , txn_ids  = get_project_transaction_ids(del_id)
-            if txn_count >= 1 :
-                print(f"This project cannot be deleted because it has {txn_count} transactions associated to it.")
-                print(f"Associated Transaction Ids: {txn_ids}")
-                return
+            ###FOR AFTER COMPLETE DATABASE MIGRATION
+            #txn_count , txn_ids  = get_project_transaction_ids(del_id)
+            #if txn_count >= 1 :
+                #print(f"This project cannot be deleted because it has {txn_count} transactions associated to it.")
+                #print(f"Associated Transaction Ids: {txn_ids}")
+                #return
                         
       
             confirm = input("\n1. Confirm"
@@ -110,8 +95,7 @@ def del_project():
                             "\n>>  ").strip()
             
             if confirm == "1":
-                data.projects.remove(project)
-                save_projects()
+                delete_project(del_id)
                 print(f"Project ID: #{project['id']} has been successfully deleted.")
                 return
 
@@ -122,17 +106,18 @@ def del_project():
     print("Project ID could not be found. Please try again.")
 
 
-def get_project_transaction_ids(project_id):
-    txn_ids = []
+###FOR AFTER COMPLETE DATABASE MIGRATION
+#def get_project_transaction_ids(project_id):
+    #txn_ids = []
 
-    if not data.transactions:
-        return len(txn_ids), txn_ids
+    #if not data.transactions:
+        #return len(txn_ids), txn_ids
 
-    for transaction in data.transactions:
-        if transaction["project_id"] == project_id:
-            txn_ids.append(transaction["id"])
+    #for transaction in data.transactions:
+        #if transaction["project_id"] == project_id:
+            #txn_ids.append(transaction["id"])
 
-    return len(txn_ids), txn_ids
+    #return len(txn_ids), txn_ids
 
 
 
@@ -218,30 +203,15 @@ def print_project(project):
     print(f"End Date : {project['end_date'].strftime("%d/%m/%Y")}")
     print(f"Estimated Revenue : ₹{project['estimated_revenue']}")
 
-    #txn_count , total_income, total_expense = get_project_stats(project['id'])
+    txn_count , total_income, total_expense = get_project_stats(project['id'])
 
-    #print("------- Financial summary -------")
+    print("------- Financial summary -------")
     
-    #print(f"Total Transactions: {txn_count}")
-    #print(f"total Income: ₹{total_income}")
-    #print(f"Total Expense: ₹{total_expense}")
-    #print(f"Profit/Loss: ₹{total_income - total_expense}")
-    #print("=" * 30)
+    print(f"Total Transactions: {txn_count}")
+    print(f"total Income: ₹{total_income}")
+    print(f"Total Expense: ₹{total_expense}")
+    print(f"Profit/Loss: ₹{total_income - total_expense}")
+    print("=" * 30)
 
-def get_project_stats(project_id):
-    txn_count = 0
-    income = 0 
-    expense = 0 
-
-    for transaction in data.transactions:
-        if transaction["project_id"] == project_id:
-            if transaction["type"] == "income":
-                income += transaction["amount"]
-            else:
-                expense += transaction["amount"]
-
-            txn_count += 1
-
-    return txn_count, income, expense
 
 

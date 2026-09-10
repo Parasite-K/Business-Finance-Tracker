@@ -1,5 +1,4 @@
-import data
-from storage import save_transactions
+from storage import load_transactions, save_transaction, delete_transaction, update_transaction, load_projects
 
 from validation import(
     get_valid_date,
@@ -12,33 +11,23 @@ from projects import view_projects
 
 def add_transaction():
     txn_type = get_valid_type()
-    date = get_valid_date()
     category = get_valid_category(txn_type)
     description = input("Enter the Description: ")
+    date = get_valid_date()
     amount = get_valid_amount()
     project_id = get_project_assignment()
 
-    transaction = {
-        "id": data.next_id,
-        "type": txn_type,
-        "category": category,
-        "description": description,
-        "date": date,
-        "amount": amount,
-        "project_id": project_id
-    }
-    
-    data.transactions.append(transaction)
-    data.next_id += 1
-    save_transactions()
+
+    txn_id = save_transaction(txn_type, category, description, date, amount, project_id)
 
 
     print(f"Transaction for ₹{amount} succesfully added!")
-    print(f"Transaction id: #{transaction["id"]}")
+    print(f"Transaction id: #{txn_id}")
 
 
 def del_transaction():
-    if not data.transactions:
+    transactions = load_transactions()
+    if not transactions:
         print("No transactions available.")
         return
 
@@ -52,7 +41,7 @@ def del_transaction():
             print("Enter a Valid Transaction ID.")
             continue
 
-    for transaction in data.transactions:
+    for transaction in transactions:
         if del_id == transaction["id"]:
             print("=" * 30)
             print_transaction(transaction)
@@ -62,8 +51,7 @@ def del_transaction():
                             "\n>>  ").strip()
             
             if confirm == "1":
-                data.transactions.remove(transaction)
-                save_transactions()
+                delete_transaction(del_id)
                 print(f"Transaction : #{transaction['id']} for ₹{transaction['amount']} has been succesfully deleted.")
                 return
 
@@ -78,7 +66,8 @@ def del_transaction():
 
 
 def edit_transaction():
-    if not data.transactions:
+    transactions = load_transactions()
+    if not transactions:
         print("No transactions available.")
         return
     
@@ -94,9 +83,8 @@ def edit_transaction():
             print("Enter a Valid Transaction ID.")
             continue
 
-    for transaction in data.transactions:
+    for transaction in transactions:
         if edit_id == transaction["id"]:
-            
 
             edited_transaction = transaction.copy()
 
@@ -106,10 +94,10 @@ def edit_transaction():
                 print("=" * 30)
 
                 print("\n Choose one of the following:- \n ")
-                choice = input("\n1. Date"
-                             "\n2. Type"
-                             "\n3. Category"
-                             "\n4. Description"
+                choice = input("\n1. Type"
+                             "\n2. Category"
+                             "\n3. Description"
+                             "\n4. Date"
                              "\n5. Amount "
                              "\n6. Project"
                              "\n7. Save and Exit "
@@ -120,24 +108,26 @@ def edit_transaction():
 
                 match choice:
                     case "1":
-                        print("====== EDITING DATE ======\n")
-                        edited_transaction["date"] = get_valid_date()
-
-                    case "2":
                         print("====== EDITING TYPE ======\n")
                         new_type = get_valid_type()
                         edited_transaction["type"] = new_type
                         print(f"Please Select a category for your new transaction type: {new_type}")
 
                         edited_transaction["category"] = get_valid_category(new_type)
+                        
 
-                    case "3":
+                    case "2":
                         print("====== EDITING CATEGORY ======\n")
                         edited_transaction["category"] = get_valid_category(edited_transaction["type"])
 
-                    case "4":
+                    case "3":
                         print("====== EDITING DESCRIPTION ======\n")
                         edited_transaction["description"] = input("Enter a Description: ")
+
+                    case "4":
+                        print("====== EDITING DATE ======\n")
+                        edited_transaction["date"] = get_valid_date()
+                        
 
                     case "5": 
                         print("====== EDITING AMOUNT ======")
@@ -148,9 +138,13 @@ def edit_transaction():
                         edited_transaction["project_id"] = get_project_assignment()
 
                     case "7":
-                        transaction.update(edited_transaction)
-                        save_transactions()
-
+                        
+                        update_transaction(
+                            edited_transaction["type"], edited_transaction["category"],
+                            edited_transaction["description"], edited_transaction["date"],
+                            edited_transaction["amount"], edited_transaction["project_id"],
+                            edit_id
+                        )
 
                         print("The new edited transaction is:-")
                         print("=" * 30)
@@ -159,7 +153,6 @@ def edit_transaction():
 
                         return
 
-                
                     case "8":
                         return
 
@@ -170,11 +163,12 @@ def edit_transaction():
 
 
 def view_transactions(): 
-    if not data.transactions:
+    transactions = load_transactions()
+    if not transactions:
         print("No transactions found.")
         return
 
-    for transaction in  data.transactions:
+    for transaction in  transactions:
         print("-" * 30)
         print_transaction(transaction)
         print("-" * 30)
@@ -194,32 +188,31 @@ def print_transaction(transaction):
         print("Project: Not assigned")
     else:
         print(f"Project ID: #{project_id}")
-        
-    project_name = get_project_name(transaction)
-    if project_name:
-        print(f"Project Name: {project_name}")
-    else:
-        print("Project Name: Not assigned")
+###FOR AFTER COMPLETE DATABASE MIGRATION        
+    #project_name = get_project_name(transaction)
+    
 
-
+###FOR AFTER COMPLETE DATABASE MIGRATION
 #transaction - project relationship
 
-def get_project_name(transaction):
-    project_id = transaction["project_id"]
-    if project_id is None:
-        return None
+#def get_project_name(transaction):
+    #project_id = transaction["project_id"]
+    #if project_id is None:
+        #return None
         
-    for project in data.projects:
-        if project_id == project["id"]:
-            return project["name"]
-    return None
+    #for project in data.projects:
+        #if project_id == project["id"]:
+            #return project["name"]
+    #return None
 
 
 
 
 
 def get_project_assignment():
-    if not data.projects:
+    projects = load_projects()
+
+    if not projects:
         print("No projects are available so Transaction will not be assigned to any.")
         return None
 
@@ -233,7 +226,7 @@ def get_project_assignment():
 
             try:
                 project_id = int(project_id)
-                for project in data.projects:
+                for project in projects:
                     if project_id == project["id"]:
                         return project_id
 

@@ -17,7 +17,6 @@ def get_valid_date():
 
 
 
-
 def get_valid_month():
     while True:
         query_month = input("Enter the month number(1-12): ")
