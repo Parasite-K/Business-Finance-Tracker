@@ -7,6 +7,7 @@ from storage import (
     update_project, 
     delete_project,
     get_project_stats,
+    get_project_transaction_ids
 )
 
 
@@ -82,12 +83,12 @@ def del_project():
             print_project(project)
             print("=" * 30)
 
-            ###FOR AFTER COMPLETE DATABASE MIGRATION
-            #txn_count , txn_ids  = get_project_transaction_ids(del_id)
-            #if txn_count >= 1 :
-                #print(f"This project cannot be deleted because it has {txn_count} transactions associated to it.")
-                #print(f"Associated Transaction Ids: {txn_ids}")
-                #return
+            txn_ids = get_project_transaction_ids(del_id)
+            txn_count = len(txn_ids)
+            if txn_ids:
+                print(f"This project cannot be deleted because it has {txn_count} transactions associated to it.")
+                print(f"Associated Transaction IDs: #{', #'.join(str(txn_id) for txn_id in txn_ids)}")
+            
                         
       
             confirm = input("\n1. Confirm"
@@ -104,22 +105,6 @@ def del_project():
                 return
     
     print("Project ID could not be found. Please try again.")
-
-
-###FOR AFTER COMPLETE DATABASE MIGRATION
-#def get_project_transaction_ids(project_id):
-    #txn_ids = []
-
-    #if not data.transactions:
-        #return len(txn_ids), txn_ids
-
-    #for transaction in data.transactions:
-        #if transaction["project_id"] == project_id:
-            #txn_ids.append(transaction["id"])
-
-    #return len(txn_ids), txn_ids
-
-
 
 
 
@@ -163,17 +148,19 @@ def edit_project():
 
                 match choice:
                     case "1":
+                        print("====== EDITING PROJECT NAME ======")
                         edited_project['name'] = input("\nEnter the new project name: ")
 
                     case "2":
-                        print("\nEditing START DATE:-")
+                        print("====== EDITING PROJECT START DATE ======")
                         edited_project['start_date'] = get_valid_date()
 
                     case "3":
-                        print("\nEditing END DATE:-")
+                        print("====== EDITING PROJECT END DATE ======")
                         edited_project['end_date'] = get_valid_date()
 
                     case "4":
+                        print("====== EDITING PROJECT ESTIMATED REVENUE ======")
                         edited_project['estimated_revenue'] = get_valid_amount()
 
                     case "5":

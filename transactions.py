@@ -1,10 +1,17 @@
-from storage import load_transactions, save_transaction, delete_transaction, update_transaction, load_projects
+from storage import (
+    load_transactions, 
+    save_transaction, 
+    delete_transaction, 
+    update_transaction, 
+    load_projects,
+    load_transactions_with_project_names,
+)
 
 from validation import(
     get_valid_date,
     get_valid_category,
     get_valid_type,
-    get_valid_amount
+    get_valid_amount,
 )
 
 from projects import view_projects
@@ -163,12 +170,12 @@ def edit_transaction():
 
 
 def view_transactions(): 
-    transactions = load_transactions()
+    transactions = load_transactions_with_project_names()
     if not transactions:
         print("No transactions found.")
         return
 
-    for transaction in  transactions:
+    for transaction in transactions:
         print("-" * 30)
         print_transaction(transaction)
         print("-" * 30)
@@ -188,22 +195,7 @@ def print_transaction(transaction):
         print("Project: Not assigned")
     else:
         print(f"Project ID: #{project_id}")
-###FOR AFTER COMPLETE DATABASE MIGRATION        
-    #project_name = get_project_name(transaction)
-    
-
-###FOR AFTER COMPLETE DATABASE MIGRATION
-#transaction - project relationship
-
-#def get_project_name(transaction):
-    #project_id = transaction["project_id"]
-    #if project_id is None:
-        #return None
-        
-    #for project in data.projects:
-        #if project_id == project["id"]:
-            #return project["name"]
-    #return None
+        print(f"Project NAME: {transaction['project_name']}")
 
 
 

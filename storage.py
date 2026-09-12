@@ -66,6 +66,16 @@ def delete_transaction(del_id):
             )
 
 
+def load_transactions_with_project_names():
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT transactions.* , projects.name as project_name " \
+                        "FROM transactions " \
+                        "LEFT JOIN projects ON transactions.project_id = projects.id" \
+            )
+            result = cur.fetchall()
+            return result
+
 
 #===========================================
 
@@ -118,16 +128,28 @@ def get_project_stats(project_id):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT COUNT(*), " \
-                        "SUM(CASE WHEN type = 'income' THEN AMOUNT ELSE 0 END), " \
-                        "SUM(CASE WHEN type = 'expense' THEN AMOUNT ELSE 0 END) " \
+                        "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0), " \
+                        "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) " \
                         "FROM transactions " \
                         "WHERE project_id = %s",
                         (project_id, )
             )
             values = cur.fetchone()
             txn_count = values[0] 
-            income = values[1] if values[1] is not None else 0
-            expense = values[2] if values[2] is not None else 0
+            income = values[1] 
+            expense = values[2] 
 
             return txn_count, income, expense
 
+def get_project_transaction_ids(project_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id " \
+                        "FROM transactions " \
+                        "WHERE project_id = %s",
+                        (project_id, )
+            )
+            res = cur.fetchall()
+            txn_ids = [row[0] for row in res]
+
+            return txn_ids
