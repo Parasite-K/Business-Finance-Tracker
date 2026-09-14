@@ -90,7 +90,7 @@ def load_projects():
 
 
 
-def save_project(project_name, Client_id, start_date, end_date, estimated_revenue):
+def save_project(project_name, client_id, start_date, end_date, estimated_revenue):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
