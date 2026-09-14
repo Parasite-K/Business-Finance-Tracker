@@ -97,7 +97,7 @@ def save_project(project_name, Client_id, start_date, end_date, estimated_revenu
                 "INSERT INTO projects (name, client_id, start_date, end_date, estimated_revenue) " \
                 "VALUES(%s, %s, %s, %s, %s) " \
                 "RETURNING id",
-                (project_name, Client_id, start_date, end_date, estimated_revenue)
+                (project_name, client_id, start_date, end_date, estimated_revenue)
                 )
             result = cur.fetchone()
             return result[0]

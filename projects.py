@@ -28,7 +28,7 @@ def add_project():
         print("\nPlease enter the End Date of the Project.")
         end_date = get_valid_date()
 
-        if start_date > end_date:
+        if start_date >= end_date:
             print("End Date must be after the Start date.")
             continue
         break
@@ -88,6 +88,7 @@ def del_project():
             if txn_ids:
                 print(f"This project cannot be deleted because it has {txn_count} transactions associated to it.")
                 print(f"Associated Transaction IDs: #{', #'.join(str(txn_id) for txn_id in txn_ids)}")
+                return
             
                         
       
@@ -153,17 +154,20 @@ def edit_project():
 
                     case "2":
                         print("====== EDITING PROJECT START DATE ======")
-                        edited_project['start_date'] = get_valid_date()
+                        edited_project['start_date'] = get_valid_date()  # HAVE TO FIX / CHECK with end date
 
                     case "3":
                         print("====== EDITING PROJECT END DATE ======")
-                        edited_project['end_date'] = get_valid_date()
+                        edited_project['end_date'] = get_valid_date()    # HAVE TO FIX / CHECK with end date
 
                     case "4":
                         print("====== EDITING PROJECT ESTIMATED REVENUE ======")
                         edited_project['estimated_revenue'] = get_valid_amount()
 
                     case "5":
+                        if edited_project['start_date'] >= edited_project['end_date']:
+                            print("End Date must be after the Start date.")
+                            return
 
                         update_project(edited_project["name"], edited_project["start_date"], edited_project["end_date"], edited_project["estimated_revenue"], edit_id)
 
@@ -186,8 +190,8 @@ def print_project(project):
     print(f"Project ID: #{project['id']}")
     print(f"Project Name : {project['name']}")
     #print(f"Client ID : {project['']}")
-    print(f"Start Date : {project['start_date'].strftime("%d/%m/%Y")}")
-    print(f"End Date : {project['end_date'].strftime("%d/%m/%Y")}")
+    print(f"Start Date : {project['start_date'].strftime('%d/%m/%Y')}")
+    print(f"End Date : {project['end_date'].strftime('%d/%m/%Y')}")
     print(f"Estimated Revenue : ₹{project['estimated_revenue']}")
 
     txn_count , total_income, total_expense = get_project_stats(project['id'])

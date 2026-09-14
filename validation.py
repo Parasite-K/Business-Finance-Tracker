@@ -85,5 +85,5 @@ def get_valid_category(txn_type):
 
             else:
                 print("Please choose a valid Category.")
-        except:
+        except ValueError:
             print("Please enter a category number.")

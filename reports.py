@@ -1,13 +1,8 @@
-import data
-
-from psycopg.rows import dict_row
-
 from storage import get_connection
 
 from validation import(
     get_valid_month,
     get_valid_year,
-    get_month_year,
     get_valid_category,
     get_valid_type
 )
@@ -34,35 +29,6 @@ def monthly_report():
             return txn_count, income, expenses, query_month, query_year
 
 
-
-
-
-
-
-
-
-
-
-    #query_month = get_valid_month()
-    #query_year = get_valid_year()
-    #txn_count = 0
-    #income = 0
-    #expenses = 0 
-
-    #if not data.transactions:
-     #   print("No transactions available.")
-
-#    for transaction in data.transactions:
- #       txn_month , txn_year = get_month_year(transaction["date"])
-  #      if query_month == txn_month and query_year == txn_year:
-   #         txn_count += 1
-#
- #           if transaction["type"] == "income":
-  #              income += transaction["amount"]
-   #         else:
-        #        expenses += transaction["amount"]
-#
- #   return txn_count, income, expenses, query_month, query_year
 
 
 def yearly_report():
