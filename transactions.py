@@ -33,7 +33,7 @@ def add_transaction():
 
 
 def del_transaction():
-    transactions = load_transactions()
+    transactions = load_transactions_with_project_names()
     if not transactions:
         print("No transactions available.")
         return
@@ -73,7 +73,7 @@ def del_transaction():
 
 
 def edit_transaction():
-    transactions = load_transactions()
+    transactions = load_transactions_with_project_names()
     if not transactions:
         print("No transactions available.")
         return
