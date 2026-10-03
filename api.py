@@ -1,5 +1,5 @@
 from typing import Literal
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import (
     BaseModel,
     Field, 
@@ -20,6 +20,15 @@ from storage import (
     update_project,
     get_project_stats
 )
+
+from reports import(
+    financial_summary,
+    monthly_report,
+    yearly_report,
+    category_report
+)
+
+
 
 from datetime import date
 from data import categories
@@ -288,4 +297,86 @@ def get_project_summary(project_id: int):
         "total_income": stats["income"],
         "total_expense": stats["expense"],
         "profit": stats["income"] - stats["expense"]
+    }
+
+#REPORTSSSSSSSSSS
+
+class FinancialSummary(BaseModel):
+    transaction_count: int
+    total_income: float
+    total_expense: float
+    profit: float
+
+    
+@app.get("/reports/summary", response_model=FinancialSummary)
+def get_financial_summary():
+    txn_count, income, expense = financial_summary()
+
+    return {
+        "transaction_count": txn_count,
+        "total_income": income,
+        "total_expense": expense,
+        "profit": income - expense
+    }
+
+class MonthlyReport(BaseModel):
+    transaction_count: int
+    total_income: float
+    total_expense: float
+    profit: float
+
+
+@app.get("/reports/monthly", response_model=MonthlyReport)
+def get_monthly_reports(
+    year: int,
+    month: int = Query(ge=1, le=12)
+):
+    txn_count, income, expense = monthly_report(year, month)
+
+    return {
+        "transaction_count": txn_count,
+        "total_income": income,
+        "total_expense": expense,
+        "profit": income - expense
+    }
+
+class YearlyReport(BaseModel):
+    transaction_count: int
+    total_income: float
+    total_expense: float
+    profit: float
+
+@app.get("/reports/yearly", response_model=YearlyReport)
+def get_yearly_reports(
+    year: int,
+):
+    txn_count, income, expense = yearly_report(year)
+
+    return {
+        "transaction_count": txn_count,
+        "total_income": income,
+        "total_expense": expense,
+        "profit": income - expense
+    } 
+
+class CategoryReport(BaseModel):
+    transaction_count: int
+    category_total: float
+
+@app.get("/reports/category", response_model=CategoryReport)
+def get_category_reports(
+    type: Literal["income", "expense"],
+    category: str
+):
+    if category not in categories[type]:
+        raise HTTPException(
+            status_code=400,
+            detail="Category does not match the transaction type."
+        )
+
+    txn_count, total = category_report(type, category)
+
+    return {
+        "transaction_count": txn_count,
+        "category_total": total
     }

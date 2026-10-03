@@ -1,19 +1,7 @@
 from storage import get_connection
 
-from validation import(
-    get_valid_month,
-    get_valid_year,
-    get_valid_category,
-    get_valid_type
-)
 
-
-
-def monthly_report():
-    query_year = get_valid_year()
-    query_month = get_valid_month() 
-    
-
+def monthly_report(query_year, query_month):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT COUNT(*), " \
@@ -25,15 +13,13 @@ def monthly_report():
                         (query_year, query_month)
             )
             result = cur.fetchone()
-            txn_count, income, expenses = result[0], result[1], result[2]
-            return txn_count, income, expenses, query_month, query_year
+            txn_count, income, expense = result[0], result[1], result[2]
+            return txn_count, income, expense
 
 
 
 
-def yearly_report():
-    query_year = get_valid_year()
-    
+def yearly_report(query_year):  
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT COUNT(*), " \
@@ -45,17 +31,12 @@ def yearly_report():
             )
             result = cur.fetchone()
             txn_count, income, expenses = result[0], result[1], result[2]
-            return txn_count, income, expenses, query_year
+            return txn_count, income, expenses
 
 
 
 
-def category_report():
-
-    print("Please select the transaction type of the category you are looking for.")
-    txn_type = get_valid_type()
-    query_category = get_valid_category(txn_type)
-    
+def category_report(txn_type, query_category):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT COUNT(*), " \
@@ -67,9 +48,8 @@ def category_report():
             )
             result = cur.fetchone()
             txn_count, total = result[0], result[1]
-            return txn_count, total, query_category, txn_type
+            return txn_count, total, 
         
-
 
 
 def financial_summary():
