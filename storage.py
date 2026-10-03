@@ -26,6 +26,17 @@ def load_transactions():
             return transactions
 
 
+def load_one_transaction(txn_id):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT * FROM transactions " \
+                        "WHERE id = %s",
+                        (txn_id, )
+            )
+            result = cur.fetchone()
+            return result
+        
+
 
 def save_transaction(txn_type, category, description, date, amount, project_id):
     with get_connection() as conn:
@@ -53,6 +64,7 @@ def update_transaction(txn_type, category, description, date, amount, project_id
                 "WHERE id = %s" ,
                 (txn_type, category, description, date, amount, project_id, edit_id)
             )
+            return cur.rowcount
 
 
 
@@ -64,6 +76,7 @@ def delete_transaction(del_id):
                 "WHERE id = %s",
                 (del_id, )
             )
+            return cur.rowcount
 
 
 def load_transactions_with_project_names():
@@ -75,6 +88,7 @@ def load_transactions_with_project_names():
             )
             result = cur.fetchall()
             return result
+
 
 
 #===========================================
@@ -89,6 +103,16 @@ def load_projects():
             return projects 
 
 
+def load_one_project(project_id):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT * FROM projects " \
+                        "WHERE id = %s",
+                        (project_id, )
+            )
+            project = cur.fetchone()
+            return project
+
 
 def save_project(project_name, client_id, start_date, end_date, estimated_revenue):
     with get_connection() as conn:
@@ -97,23 +121,26 @@ def save_project(project_name, client_id, start_date, end_date, estimated_revenu
                 "INSERT INTO projects (name, client_id, start_date, end_date, estimated_revenue) " \
                 "VALUES(%s, %s, %s, %s, %s) " \
                 "RETURNING id",
-                (project_name, client_id, start_date, end_date, estimated_revenue)
+                (project_name, None, start_date, end_date, estimated_revenue)
                 )
             result = cur.fetchone()
             return result[0]
 
-def update_project(project_name, start_date, end_date, estimated_revenue, edit_id):
+
+def update_project(project_name, client_id, start_date, end_date, estimated_revenue, edit_id):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 "UPDATE projects " \
                 "SET name = %s, " \
+                "client_id = %s, " \
                 "start_date = %s, " \
                 "end_date = %s, " \
                 "estimated_revenue = %s " \
                 "WHERE id = %s" ,
-                (project_name, start_date, end_date, estimated_revenue, edit_id)
+                (project_name, None, start_date, end_date, estimated_revenue, edit_id)
             )
+            return cur.rowcount
 
 
 def delete_project(project_id):
@@ -121,25 +148,51 @@ def delete_project(project_id):
         with conn.cursor() as cur:
             cur.execute("DELETE FROM projects " \
                         "WHERE id = %s",
-                        (project_id,)
-            )
-
-def get_project_stats(project_id):
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*), " \
-                        "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0), " \
-                        "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) " \
-                        "FROM transactions " \
-                        "WHERE project_id = %s",
                         (project_id, )
             )
-            values = cur.fetchone()
-            txn_count = values[0] 
-            income = values[1] 
-            expense = values[2] 
+            return cur.rowcount
 
-            return txn_count, income, expense
+
+
+
+def get_project_stats(project_id):
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    p.id,
+                    COUNT(t.id),
+                    COALESCE(SUM(CASE
+                        WHEN t.type = 'income' THEN t.amount
+                        ELSE 0
+                    END), 0),
+                    COALESCE(SUM(CASE
+                        WHEN t.type = 'expense' THEN t.amount
+                        ELSE 0
+                    END), 0)
+                FROM projects p
+                LEFT JOIN transactions t
+                    ON p.id = t.project_id
+                WHERE p.id = %s
+                GROUP BY p.id
+                """,
+                (project_id, )
+            )
+
+            result = cur.fetchone()
+
+            if result is None:
+                return None
+
+            return {
+                "project_id": result[0],
+                "transaction_count": result[1],
+                "income": result[2],
+                "expense": result[3]
+            }
+
 
 def get_project_transaction_ids(project_id):
     with get_connection() as conn:
