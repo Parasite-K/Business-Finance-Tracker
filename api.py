@@ -5,6 +5,7 @@ from pydantic import (
     Field, 
     model_validator
 )
+from psycopg.errors import ForeignKeyViolation
 
 from storage import (
     load_transactions, 
@@ -74,14 +75,21 @@ def home():
 
 @app.post("/transactions")
 def create_transaction(transaction: TransactionCreate):
-    txn_id = save_transaction(
-        transaction.type,
-        transaction.category,
-        transaction.description,
-        transaction.date,
-        transaction.amount,
-        transaction.project_id    #HANDLE PROJECT ID DOES NOT EXIST!!!!!!!
-    )
+    try:
+        txn_id = save_transaction(
+            transaction.type,
+            transaction.category,
+            transaction.description,
+            transaction.date,
+            transaction.amount,
+            transaction.project_id    
+        )
+    except ForeignKeyViolation:
+        raise HTTPException(
+            status_code=400,
+            detail="Specified Project Does Not Exist."
+        )
+
     return {
         "message": "Transaction created successfully",
         "transaction_id": txn_id
@@ -222,9 +230,15 @@ def create_project(project: ProjectsCreate):
         "project_id": project_id
     }
 
-@app.delete("/projects/{project_id}")   #HANDLE ACTIVE TRANSACTIONS, CANNOT DELETE
+@app.delete("/projects/{project_id}")   
 def del_project(project_id: int):
-    deleted = delete_project(project_id)
+    try:
+        deleted = delete_project(project_id)
+    except ForeignKeyViolation:
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot delete this project because it has associated transactions."
+        )
 
     if deleted == 0:
         raise HTTPException(
