@@ -18,7 +18,12 @@ from storage import (
     save_project,
     delete_project,
     update_project,
-    get_project_stats
+    get_project_stats,
+    load_clients,
+    save_client,
+    update_client,
+    delete_client,
+    load_one_client
 )
 
 from reports import(
@@ -299,6 +304,109 @@ def get_project_summary(project_id: int):
         "profit": stats["income"] - stats["expense"]
     }
 
+##CLIENTSSSSS
+
+class ClientsCreate(BaseModel):
+    name: str
+    gstin: str | None = None
+    address: str | None = None
+    phone: str | None = None
+    email: str | None = None
+
+@app.post("/clients")
+def create_client(client: ClientsCreate):
+    client_id = save_client(
+        client.name,
+        client.gstin,
+        client.address,
+        client.phone,
+        client.email
+    )
+
+    return {
+        "message": "Client successfully created.",
+        "client_id": client_id
+    }
+
+class ClientsResponse(BaseModel):
+    id: int
+    name: str
+    gstin: str | None = None
+    address: str | None = None
+    phone: str | None = None
+    email: str | None = None
+
+@app.get("/clients", response_model=list[ClientsResponse])
+def get_clients():
+    return load_clients()
+
+@app.get("/clients/{client_id}", response_model=ClientsResponse)
+def get_one_client(client_id: int):
+    client = load_one_client(client_id)
+
+    if client is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found"
+        )
+    return client
+
+class ClientsUpdate(BaseModel):
+    name: str
+    gstin: str | None = None
+    address: str | None = None
+    phone: str | None = None
+    email: str | None = None
+
+@app.put("/clients/{client_id}", response_model=ClientsResponse)
+def edit_project(client_id: int, client: ClientsUpdate):
+    updated = update_client(
+        client.name,
+        client.gstin,
+        client.address,
+        client.phone,
+        client.email,
+        client_id     
+    )
+
+    if updated == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Client Not Found"
+        )
+    
+    return load_one_client(client_id)
+
+
+@app.delete("/clients/{client_id}")   
+def del_client(client_id: int):
+    try:
+        deleted = delete_client(client_id)
+    except ForeignKeyViolation:
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot delete this client because it has associated projects."
+        )
+
+    if deleted == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Client Not Found."
+        )
+
+    return {
+        "message": "Client deleted successfully",
+        "project_id": client_id
+    }
+
+
+
+
+
+
+
+
+
 #REPORTSSSSSSSSSS
 
 class FinancialSummary(BaseModel):
@@ -380,3 +488,5 @@ def get_category_reports(
         "transaction_count": txn_count,
         "category_total": total
     }
+
+

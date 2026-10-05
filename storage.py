@@ -121,7 +121,7 @@ def save_project(project_name, client_id, start_date, end_date, estimated_revenu
                 "INSERT INTO projects (name, client_id, start_date, end_date, estimated_revenue) " \
                 "VALUES(%s, %s, %s, %s, %s) " \
                 "RETURNING id",
-                (project_name, None, start_date, end_date, estimated_revenue)
+                (project_name, client_id, start_date, end_date, estimated_revenue)
                 )
             result = cur.fetchone()
             return result[0]
@@ -138,7 +138,7 @@ def update_project(project_name, client_id, start_date, end_date, estimated_reve
                 "end_date = %s, " \
                 "estimated_revenue = %s " \
                 "WHERE id = %s" ,
-                (project_name, None, start_date, end_date, estimated_revenue, edit_id)
+                (project_name, client_id, start_date, end_date, estimated_revenue, edit_id)
             )
             return cur.rowcount
 
@@ -206,3 +206,63 @@ def get_project_transaction_ids(project_id):
             txn_ids = [row[0] for row in res]
 
             return txn_ids
+
+###CLIENTS#######
+
+def save_client(client_name, gstin, address, phone, email):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO clients(name, gstin, address, phone, email) " \
+                "VALUES(%s, %s, %s, %s, %s) " \
+                "RETURNING id",
+                (client_name, gstin, address, phone, email)
+            )
+            result = cur.fetchone()
+            return result[0]
+
+def load_clients():
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                "SELECT * FROM clients"
+            )
+            clients = cur.fetchall()
+            return clients
+
+def load_one_client(client_id):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                "SELECT * FROM clients " \
+                "WHERE id = %s",
+                (client_id, )
+            )
+            client = cur.fetchone()
+            return client
+
+def update_client(client_name, gstin, address, phone, email, edit_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE clients " \
+                "SET name = %s, " \
+                "gstin = %s, " \
+                "address = %s, " \
+                "phone = %s, " \
+                "email = %s " \
+                "WHERE id = %s",
+                (client_name, gstin, address, phone, email, edit_id)
+            )
+            return cur.rowcount
+
+def delete_client(del_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM clients " \
+                "WHERE id = %s",
+                (del_id, )
+            )
+
+            return cur.rowcount
