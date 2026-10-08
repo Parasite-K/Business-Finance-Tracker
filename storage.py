@@ -266,3 +266,27 @@ def delete_client(del_id):
             )
 
             return cur.rowcount
+
+def load_client_with_projects(client_id):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                "SELECT "
+                "c.id AS client_id, "
+                "c.name AS client_name, "
+                "c.gstin, "
+                "c.address, "
+                "c.phone, "
+                "c.email, "
+                "p.id AS project_id, "
+                "p.name AS project_name, "
+                "p.start_date, "
+                "p.end_date, "
+                "p.estimated_revenue "
+                "FROM clients AS c "
+                "LEFT JOIN projects AS p "
+                "ON c.id = p.client_id "
+                "WHERE c.id = %s",
+                (client_id,)
+            )   
+            return cur.fetchall()

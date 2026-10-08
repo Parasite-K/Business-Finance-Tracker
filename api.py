@@ -23,7 +23,8 @@ from storage import (
     save_client,
     update_client,
     delete_client,
-    load_one_client
+    load_one_client,
+    load_client_with_projects
 )
 
 from reports import(
@@ -41,6 +42,12 @@ from data import categories
 
 app = FastAPI()
 
+
+@app.get("/")
+def home():
+    return {"message": "Business Finance Tracker API"}
+
+    
 class TransactionCreate(BaseModel):
     type: Literal["income", "expense"]
     category: str
@@ -51,41 +58,15 @@ class TransactionCreate(BaseModel):
 
     @model_validator(mode="after")
     def validate_category(self):
-        if self.category not in categories[self.type]:
-            raise ValueError("Category does not match transaction type.")
+        category = None
+        for valid_category in categories[self.type]:
+            if valid_category.lower() == self.category.lower():
+                category = valid_category
+                break
+        if category is None:
+            raise ValueError("Category does not match the transaction type.")
 
-        return self
-
-class TransactionResponse(BaseModel):
-    id: int
-    type: Literal["income", "expense"]
-    category: str
-    description: str
-    date: date
-    amount: float
-    project_id: int | None
-
-
-class TransactionUpdate(BaseModel):
-    type: Literal["income", "expense"]
-    category: str
-    description: str
-    date: date
-    amount: float = Field(ge=0)
-    project_id: int | None = None
-
-    @model_validator(mode="after")
-    def validate_category(self):
-        if self.category not in categories[self.type]:
-            raise ValueError("Category does not match transaction type.")
-
-        return self
-    
-
-
-@app.get("/")
-def home():
-    return {"message": "Business Finance Tracker API"}
+        self.category = category
 
 @app.post("/transactions")
 def create_transaction(transaction: TransactionCreate):
@@ -110,7 +91,14 @@ def create_transaction(transaction: TransactionCreate):
     }
 
 
-
+class TransactionResponse(BaseModel):
+    id: int
+    type: Literal["income", "expense"]
+    category: str
+    description: str
+    date: date
+    amount: float
+    project_id: int | None
 
 @app.get("/transactions", response_model=list[TransactionResponse])
 def get_transactions():
@@ -128,6 +116,7 @@ def get_one_transaction(txn_id: int):
 
     return transaction
 
+
 @app.delete("/transactions/{txn_id}")
 def del_transaction(txn_id: int):
     deleted = delete_transaction(txn_id)
@@ -142,6 +131,27 @@ def del_transaction(txn_id: int):
         "message": "Transaction deleted successfully",
         "transaction_id": txn_id
     }
+
+class TransactionUpdate(BaseModel):
+    type: Literal["income", "expense"]
+    category: str
+    description: str
+    date: date
+    amount: float = Field(ge=0)
+    project_id: int | None = None
+
+    @model_validator(mode="after")
+    def validate_category(self):
+        category = None
+        for valid_category in categories[self.type]:
+            if valid_category.lower() == self.category.lower():
+                category = valid_category
+                break
+        if category is None:
+            raise ValueError("Category does not match the transaction type.")
+
+        self.category = category
+
 
 @app.put("/transactions/{txn_id}", response_model=TransactionResponse)
 def edit_transaction(txn_id: int, transaction:TransactionUpdate):
@@ -166,19 +176,6 @@ def edit_transaction(txn_id: int, transaction:TransactionUpdate):
     
 
 ##PROJECTS##
-class ProjectsCreate(BaseModel):
-    name: str
-    client_id: int | None = None
-    start_date: date
-    end_date: date
-    estimated_revenue: float = Field(ge=0)
-
-    @model_validator(mode='after')
-    def validate_dates(self):
-        if self.start_date >= self.end_date:
-            raise ValueError("End Date must be after the Start Date.")
-
-        return self
 
 
 class ProjectsResponse(BaseModel):
@@ -188,29 +185,6 @@ class ProjectsResponse(BaseModel):
     start_date: date
     end_date: date
     estimated_revenue: float 
-
-class ProjectsUpdate(BaseModel):
-    name: str
-    client_id: int | None = None
-    start_date: date
-    end_date: date
-    estimated_revenue: float = Field(ge=0)
-
-    @model_validator(mode='after')
-    def validate_dates(self):
-        if self.start_date >= self.end_date:
-            raise ValueError("End Date must be after the Start Date.")
-
-        return self
-
-class ProjectFinanceReports(BaseModel):
-    project_id: int
-    transaction_count: int
-    total_income: float
-    total_expense: float
-    profit: float
-
-
 
 @app.get("/projects", response_model=list[ProjectsResponse])
 def get_projects():
@@ -228,6 +202,19 @@ def get_one_project(project_id: int):
         )
     return project
 
+class ProjectsCreate(BaseModel):
+    name: str
+    client_id: int | None = None
+    start_date: date
+    end_date: date
+    estimated_revenue: float = Field(ge=0)
+
+    @model_validator(mode='after')
+    def validate_dates(self):
+        if self.start_date >= self.end_date:
+            raise ValueError("End Date must be after the Start Date.")
+
+        return self
 
 @app.post("/projects")
 def create_project(project: ProjectsCreate):
@@ -265,6 +252,20 @@ def del_project(project_id: int):
         "project_id": project_id
     }
 
+class ProjectsUpdate(BaseModel):
+    name: str
+    client_id: int | None = None
+    start_date: date
+    end_date: date
+    estimated_revenue: float = Field(ge=0)
+
+    @model_validator(mode='after')
+    def validate_dates(self):
+        if self.start_date >= self.end_date:
+            raise ValueError("End Date must be after the Start Date.")
+
+        return self
+
 @app.put("/projects/{project_id}", response_model=ProjectsResponse)
 def edit_project(project_id: int, project: ProjectsUpdate):
     updated = update_project(
@@ -284,6 +285,12 @@ def edit_project(project_id: int, project: ProjectsUpdate):
     
     return load_one_project(project_id)
 
+class ProjectFinanceReports(BaseModel):
+    project_id: int
+    transaction_count: int
+    total_income: float
+    total_expense: float
+    profit: float
 
 @app.get("/projects/{project_id}/summary", response_model=ProjectFinanceReports)
 def get_project_summary(project_id: int):
@@ -399,10 +406,52 @@ def del_client(client_id: int):
         "project_id": client_id
     }
 
+class ClientProjectsResponse(BaseModel):
+    client_id: int
+    client_name: str
+    gstin: str | None = None
+    address: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    projects: list[ProjectsResponse]
 
+@app.get("/clients/{client_id}/projects", response_model=ClientProjectsResponse)
+def get_client_with_projects(client_id: int):
+    rows = load_client_with_projects(client_id)
 
+    if not rows:
+        raise HTTPException(
+            status_code=404,
+            detail="Client not found."
+        )
+    projects = []
 
+    for row in rows:
+        if row["project_id"] is not None:
+            project = {
+                "id": row["project_id"],
+                "name": row["project_name"],
+                "client_id": row["client_id"],
+                "start_date": row["start_date"],
+                "end_date": row["end_date"],
+                "estimated_revenue": row["estimated_revenue"]
+            }
+            projects.append(project)
 
+        
+
+    client = {
+        "client_id": rows[0]["client_id"],
+        "client_name": rows[0]["client_name"],
+        "gstin": rows[0]["gstin"],
+        "address": rows[0]["address"],
+        "phone": rows[0]["phone"],
+        "email": rows[0]["email"],
+        "projects": projects
+        }
+
+    return client
+    
 
 
 
@@ -471,22 +520,30 @@ class CategoryReport(BaseModel):
     transaction_count: int
     category_total: float
 
+
+
+
 @app.get("/reports/category", response_model=CategoryReport)
 def get_category_reports(
     type: Literal["income", "expense"],
     category: str
 ):
-    if category not in categories[type]:
+    matched_category = None
+
+    for valid_category in categories[type]:
+        if valid_category.lower() == category.lower():
+            matched_category = valid_category
+            break
+
+    if matched_category is None:
         raise HTTPException(
             status_code=400,
             detail="Category does not match the transaction type."
         )
 
-    txn_count, total = category_report(type, category)
+    txn_count, total = category_report(type, matched_category)
 
     return {
         "transaction_count": txn_count,
         "category_total": total
     }
-
-
