@@ -18,12 +18,60 @@ def get_connection():
         
 
 #transactions
-def load_transactions():
+def load_transactions(
+        txn_type = None,
+        category = None,
+        project_id = None,
+        min_amount = None,
+        max_amount = None,
+        start_date = None,
+        end_date = None,
+        limit=20,
+        offset=0):
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM transactions")
+            query = "SELECT * FROM transactions WHERE TRUE"
+            params = []
+
+            if txn_type is not None:
+                query += " AND type = %s"
+                params.append(txn_type)
+
+            if category is not None:
+                query += " AND category = %s"
+                params.append(category)
+
+            if project_id is not None:
+                query += " AND project_id = %s"
+                params.append(project_id)
+
+            if min_amount is not None:
+                query += " AND amount >= %s"
+                params.append(min_amount)
+
+            if max_amount is not None:
+                query += " AND amount <= %s"
+                params.append(max_amount)
+
+            if start_date is not None:
+                query += " AND date >= %s"
+                params.append(start_date)
+
+            if end_date is not None:
+                query += " AND date <= %s"
+                params.append(end_date)
+
+            count_query = query.replace("SELECT *", "SELECT COUNT(*) as count")
+            cur.execute(count_query, params)
+            txn_count = cur.fetchone()
+
+            query += " ORDER BY id ASC LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
+
+            cur.execute(query, params)
             transactions = cur.fetchall()
-            return transactions
+
+            return transactions, txn_count["count"]
 
 
 def load_one_transaction(txn_id):
