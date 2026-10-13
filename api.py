@@ -66,6 +66,7 @@ class TransactionCreate(BaseModel):
             raise ValueError("Category does not match the transaction type.")
 
         self.category = category
+        return self
 
 @app.post("/transactions")
 def create_transaction(transaction: TransactionCreate):
@@ -228,6 +229,7 @@ class TransactionUpdate(BaseModel):
             raise ValueError("Category does not match the transaction type.")
 
         self.category = category
+        return self
 
 
 @app.put("/transactions/{txn_id}", response_model=TransactionResponse)
